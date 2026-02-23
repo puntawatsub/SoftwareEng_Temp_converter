@@ -55,4 +55,10 @@ public class NopeusLaskinTest {
             NopeusLaskin.averageSpeed(distance, time);
         });
     }
+
+    @Test
+    void kelvinToCelsius() {
+        double kelvin = 300;
+        assertEquals(26.85, NopeusLaskin.kelvinToCelsius(kelvin), 0.01);
+    }
 }

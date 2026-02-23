@@ -20,6 +20,13 @@ public class NopeusLaskin {
 
     }
 
+    // Input: 300 K
+    // Output: 26.85°C
+    // Calculation: 300 - 273.15 = 26.85
+    public static double kelvinToCelsius(double kelvin) {
+        return kelvin - 273.15;
+    }
+
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         System.out.println("Enter distance:");
