@@ -2,6 +2,8 @@ pipeline {
     agent any
 
     environment {
+        PATH = "/usr/local/bin/docker"
+
         // Define Docker Hub credentials ID
         DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
         // Define Docker Hub repository name
