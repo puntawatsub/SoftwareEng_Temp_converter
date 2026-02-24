@@ -23,7 +23,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                sh branch: 'main', url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git' //CHECK THE GITHUB REPO
+                git branch: 'main', url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git' //CHECK THE GITHUB REPO
             }
         }
 
