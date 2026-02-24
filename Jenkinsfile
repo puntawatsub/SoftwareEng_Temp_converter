@@ -1,41 +1,77 @@
 pipeline {
     agent any
 
+    environment {
+        // Define Docker Hub credentials ID
+        DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
+        // Define Docker Hub repository name
+        DOCKERHUB_REPO = 'puntawatsubhamani/week6_inclass_test1'
+        // Define Docker image tag
+        DOCKER_IMAGE_TAG = 'latest'
+    }
+
     tools {
-        maven "Maven"
+        maven 'Maven'
     }
 
     stages {
-
-        stage("Checkout") {
+        stage('Check Docker') {
             steps {
-                git branch: 'main',
-                    url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git'
+                sh 'docker --version'
             }
         }
 
-        stage("Build & Test") {
+        stage('Checkout') {
             steps {
-                sh "mvn -Dmaven.test.failure.ignore=true clean verify"
+                sh branch: 'master', url: 'https://github.com/ADirin/week6_lecturedemo_SEP-.git' //CHECK THE GITHUB REPO
             }
         }
 
-        stage("Publish Test Report") {
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Code Coverage') {
+            steps {
+                bat 'mvn jacoco:report'
+            }
+        }
+
+        stage('Publish Test Results') {
             steps {
                 junit '**/target/surefire-reports/*.xml'
             }
         }
 
-        stage("Publish Coverage Report") {
+        stage('Publish Coverage Report') {
             steps {
-                jacoco()   // If using JaCoCo plugin
+                jacoco()
             }
         }
-    }
 
-    post {
-        success {
-            archiveArtifacts 'target/*.jar'
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t %DOCKERHUB_REPO%:%DOCKER_IMAGE_TAG% .'
+            }
+        }
+
+        stage('Push Docker Image to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat '''
+                        docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                        docker push %DOCKERHUB_REPO%:%DOCKER_IMAGE_TAG%
+                    '''
+                }
+            }
         }
     }
 }
