@@ -10,7 +10,7 @@ pipeline {
         stage('Build') {
             steps {
                 stages {
-                    stage("Pull code") {
+                    stage("Checkout") {
                         // Get some code from a GitHub repository
                         git branch: 'main',
                                 url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git'
