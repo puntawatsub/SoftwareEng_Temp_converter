@@ -23,7 +23,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                sh branch: 'master', url: 'https://github.com/ADirin/week6_lecturedemo_SEP-.git' //CHECK THE GITHUB REPO
+                sh branch: 'main', url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git' //CHECK THE GITHUB REPO
             }
         }
 
@@ -41,7 +41,7 @@ pipeline {
 
         stage('Code Coverage') {
             steps {
-                bat 'mvn jacoco:report'
+                sh 'mvn jacoco:report'
             }
         }
 
@@ -59,14 +59,14 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %DOCKERHUB_REPO%:%DOCKER_IMAGE_TAG% .'
+                sh 'docker build -t %DOCKERHUB_REPO%:%DOCKER_IMAGE_TAG% .'
             }
         }
 
         stage('Push Docker Image to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: "${DOCKERHUB_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat '''
+                    sh '''
                         docker login -u %DOCKER_USER% -p %DOCKER_PASS%
                         docker push %DOCKERHUB_REPO%:%DOCKER_IMAGE_TAG%
                     '''
