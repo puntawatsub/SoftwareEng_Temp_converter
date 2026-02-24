@@ -1,41 +1,101 @@
 pipeline {
     agent any
 
+    environment {
+        PATH = "/usr/local/bin:$PATH"
+
+        DOCKERHUB_CREDENTIALS_ID = 'Docker_Hub'
+        DOCKERHUB_REPO = 'puntawatsubhamani/week6_inclass_test1'
+        DOCKER_IMAGE_TAG = 'latest'
+    }
+
     tools {
-        maven "Maven"
+        maven 'Maven'
     }
 
     stages {
 
-        stage("Checkout") {
+        stage('Check Docker') {
+            steps {
+                sh 'docker --version'
+            }
+        }
+
+        stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git'
+                url: 'https://github.com/puntawatsub/SoftwareEng_Temp_converter.git'
             }
         }
 
-        stage("Build & Test") {
+        stage('Build') {
             steps {
-                sh "mvn -Dmaven.test.failure.ignore=true clean verify"
+                sh 'mvn clean install'
             }
         }
 
-        stage("Publish Test Report") {
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+
+        stage('Code Coverage') {
+            steps {
+                sh 'mvn jacoco:report'
+            }
+        }
+
+        stage('Publish Test Results') {
             steps {
                 junit '**/target/surefire-reports/*.xml'
             }
         }
 
-        stage("Publish Coverage Report") {
+        stage('Publish Coverage Report') {
             steps {
-                jacoco()   // If using JaCoCo plugin
+                jacoco()
             }
         }
-    }
 
-    post {
-        success {
-            archiveArtifacts 'target/*.jar'
-        }
+//        stage('Build Docker Image') {
+//            steps {
+//                sh 'docker build -t ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG} .'
+//            }
+//        }
+//
+//        stage('Push Docker Image to Docker Hub') {
+//            steps {
+//                withCredentials([
+//                    usernamePassword(
+//                        credentialsId: "${DOCKERHUB_CREDENTIALS_ID}",
+//                        usernameVariable: 'DOCKER_USER',
+//                        passwordVariable: 'DOCKER_PASS'
+//                    )
+//                ]) {
+//                    sh '''
+//                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+//                        docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}
+//                    '''
+//                }
+//            }
+//        }
+        stage('Build Docker Image') {
+                          steps {
+                             script {
+                                 docker.build("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}")
+                             }
+                          }
+                     }
+
+         stage('Push Docker Image to Docker Hub') {
+                  steps {
+                      script {
+                          docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
+                              docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
+                          }
+                      }
+                  }
+         }
     }
 }
