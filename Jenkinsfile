@@ -65,22 +65,7 @@ pipeline {
 //            }
 //        }
 //
-//        stage('Push Docker Image to Docker Hub') {
-//            steps {
-//                withCredentials([
-//                    usernamePassword(
-//                        credentialsId: "${DOCKERHUB_CREDENTIALS_ID}",
-//                        usernameVariable: 'DOCKER_USER',
-//                        passwordVariable: 'DOCKER_PASS'
-//                    )
-//                ]) {
-//                    sh '''
-//                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
-//                        docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}
-//                    '''
-//                }
-//            }
-//        }
+//
         stage('Build Docker Image') {
               steps {
                  script {
@@ -89,19 +74,37 @@ pipeline {
               }
         }
 
-         stage('Push Docker Image to Docker Hub') {
-             steps {
-                 // This helper handles the credentials securely without the Docker plugin
-                 withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID,
-                                                   passwordVariable: 'DOCKER_PASS',
-                                                   usernameVariable: 'DOCKER_USER')]) {
-                     sh """
-                         echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
-                         docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}
-                         docker logout
-                     """
-                 }
-             }
-         }
+//         stage('Push Docker Image to Docker Hub') {
+//             steps {
+//                 // This helper handles the credentials securely without the Docker plugin
+//                 withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID,
+//                                                   passwordVariable: 'DOCKER_PASS',
+//                                                   usernameVariable: 'DOCKER_USER')]) {
+//                     sh """
+//                         echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+//                         docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}
+//                         docker logout
+//                     """
+//                 }
+//             }
+//         }
+
+           stage('Push Docker Image to Docker Hub') {
+                steps {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: "${DOCKERHUB_CREDENTIALS_ID}",
+                            usernameVariable: 'DOCKER_USER',
+                            passwordVariable: 'DOCKER_PASS'
+                        )
+                    ]) {
+                        sh '''
+                            echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                            docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}
+                            docker logout
+                        '''
+                    }
+                }
+            }
     }
 }
