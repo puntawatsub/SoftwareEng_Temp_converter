@@ -91,15 +91,15 @@ pipeline {
 
          stage('Push Docker Image to Docker Hub') {
              steps {
-                 script {
-                     // Force Jenkins to use the tool defined in Global Tool Configuration
-                     def dockerTool = tool name: 'local-docker', type: 'docker-tool'
-
-                     withEnv(["PATH+DOCKER=${dockerTool}/bin"]) {
-                         docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
-                             docker.image("${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}").push()
-                         }
-                     }
+                 // This helper handles the credentials securely without the Docker plugin
+                 withCredentials([usernamePassword(credentialsId: DOCKERHUB_CREDENTIALS_ID,
+                                                   passwordVariable: 'DOCKER_PASS',
+                                                   usernameVariable: 'DOCKER_USER')]) {
+                     sh """
+                         echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                         docker push ${DOCKERHUB_REPO}:${DOCKER_IMAGE_TAG}
+                         docker logout
+                     """
                  }
              }
          }
