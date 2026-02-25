@@ -93,7 +93,7 @@ pipeline {
              steps {
                  script {
                      // Force Jenkins to use the tool defined in Global Tool Configuration
-                     def dockerTool = tool name: 'my-docker', type: 'docker-tool'
+                     def dockerTool = tool name: 'local-docker', type: 'docker-tool'
 
                      withEnv(["PATH+DOCKER=${dockerTool}/bin"]) {
                          docker.withRegistry('https://index.docker.io/v1/', DOCKERHUB_CREDENTIALS_ID) {
